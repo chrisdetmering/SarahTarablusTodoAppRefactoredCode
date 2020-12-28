@@ -5,98 +5,136 @@ const clearBtn =  document.getElementById('clear-btn');
 const clearListBtn = document.getElementById('clear-btn-2');
 
 
-
-addBtn.addEventListener('click', addNewTask);
-list.addEventListener('click', removeTask);
-list.addEventListener('click', crossTask);
-clearBtn.addEventListener('click', clearTasks);
-//clearListBtn.addEventListener('click', clearList);
-
-
-function addNewTask(e){
-  e.preventDefault();
-  if(input.value !== ''){
-    const li = document.createElement('li');
-    li.className = 'list-item';
-    li.appendChild(document.createTextNode(input.value));
-    const checkBox = document.createElement('input');
-    checkBox.setAttribute('type', 'checkbox');
-    checkBox.className = 'check-box';
-    li.appendChild(checkBox);
-    const x = document.createElement('a');
-    x.className = 'delete-btn';
-    x.innerHTML = 'X'
-    x.style.backgroundColor = 'rgb(255, 204, 94)';
-    x.style.color = 'white';
-    x.style.cursor = 'pointer';
-    li.appendChild(x);
-    list.appendChild(li);
-
-    clearBtn.style.display = 'block';
-     
-    setTaskToLocalStorage(input.value);
-  } else {
-    alert('Make sure to add a task!');
-  }
-  input.value = '';
+const getSavedTodos = () => { 
+  const todos = JSON.parse(localStorage.getItem("todos")) || []; 
+  return todos; 
 }
 
-function removeTask(e){
-  if(e.target.classList.contains('delete-btn')){
-    e.target.parentElement.remove();
-  }
-}
-
-function crossTask(e){
-  if(e.target.classList.contains('check-box')){
-    const li = e.target.parentElement;
-    li.style.textDecoration = 'line-through';
-    /*e.target.siblingChild.contains('delete-btn')
-      const x = e.target.siblingChild;
-      x.style.textDecoration = 'none';*/
-  }
-}
-
-function clearTasks(){
-  while(list.firstChild){
-    list.removeChild(list.firstChild);
-    clearBtn.style.display = 'none';
-  }
-}
-
-function setTaskToLocalStorage(task){
- if(localStorage.getItem('tasks') === null){
-  let tasks = [];
-  tasks.push(task);
-  let stringifiedTasks = JSON.stringify(tasks);
-  localStorage.setItem('tasks', stringifiedTasks);
- }else{
-  tasks = localStorage.getItem('tasks');
-  let newTasks = JSON.parse(tasks);
-  newTasks.push(task);
-  let stringifiedTasks = JSON.stringify(newTasks);
-  localStorage.setItem('tasks', stringifiedTasks); 
- }
+const saveTodo = (todo) => {
+  const todos = getSavedTodos(); 
+  todos.push(todo)
+  localStorage.setItem('todos', JSON.stringify(todos)); 
 } 
 
-function getTasksFromLocalStorage(){
-  if(localStorage.getItem('tasks') === null){
-   let tasks = [];
- }else{
-   tasks = localStorage.getItem('tasks');
-   let newTasks = JSON.parse(tasks);
-   newTasks.forEach(function(task){
-    const li = document.createElement('li');
-    li.className = 'localStorage-item';
-    li.style.color = 'rgb(255, 204, 94)';
-    li.appendChild(document.createTextNode(task));
-    const list2 = document.querySelector('.localStorage-list');
-    list2.appendChild(li);
-    document.getElementById('clear-btn-2').style.display = 'block';
-  })
- }
+const displayTodo = (todo) => { 
+  const todoListItem = createTodoListItem(todo); 
+  const todoDeleteButton = createTodoDeleteButton(todo);
+
+  todoListItem.appendChild(todoDeleteButton);
+  list.appendChild(todoListItem);
 }
-getTasksFromLocalStorage();
+
+
+const createTodoListItem = todo => { 
+  const li = document.createElement('li');
+  li.className = 'list-item';
+  li.textContent = todo.text;
+  return li; 
+}
+
+
+const deleteSavedTodo = todo => { 
+  const todos = getSavedTodos(); 
+
+  const newTodos = todos.filter(savedTodo => savedTodo.id !== todo.id)
+  localStorage.setItem('todos', JSON.stringify(newTodos)); 
+}
+
+
+
+const createTodoDeleteButton = todo => { 
+    const deleteButton = document.createElement('a');
+    deleteButton.className = 'delete-btn';
+    deleteButton.innerHTML = 'X'
+    deleteButton.style.backgroundColor = 'rgb(255, 204, 94)';
+    deleteButton.style.color = 'white';
+    deleteButton.style.cursor = 'pointer';
+
+
+    deleteButton.addEventListener('click', e => { 
+      e.target.parentElement.remove() 
+      deleteSavedTodo(todo); 
+    })
+
+    return deleteButton; 
+}
+
+
+const addNewTodo = (e) => {
+  e.preventDefault();
+  if(input.value === ''){
+      alert('Make sure to add a task!');
+      return; 
+  }
+
+    const todo = { 
+      id: Math.random(), 
+      text: input.value, 
+      isCompleted: false, 
+    }
+
+    displayTodo(todo); 
+    saveTodo(todo);
+    input.value = '';
+}
+
+addBtn.addEventListener('click', addNewTodo);
+
+
+
+const displaySavedTodos = () => {
+  const savedTodos = getSavedTodos(); 
+
+  savedTodos.forEach(todo => { 
+    displayTodo(todo)
+  })
+}
+displaySavedTodos();
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// function removeTask(e){
+//   if(e.target.classList.contains('delete-btn')){
+//     e.target.parentElement.remove();
+//   }
+// }
+
+// function crossTask(e){
+//   if(e.target.classList.contains('check-box')){
+//     const li = e.target.parentElement;
+//     li.style.textDecoration = 'line-through';
+//     /*e.target.siblingChild.contains('delete-btn')
+//       const x = e.target.siblingChild;
+//       x.style.textDecoration = 'none';*/
+//   }
+// }
+
+// function clearTasks(){
+//   while(list.firstChild){
+//     list.removeChild(list.firstChild);
+//     clearBtn.style.display = 'none';
+//   }
+// }
+
+
+
+
+
+
+
+
 
 
 
